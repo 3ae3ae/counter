@@ -1,5 +1,5 @@
+import 'dart:async';
 import 'dart:math';
-import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -156,11 +156,20 @@ class MainApp extends ConsumerWidget {
   }
 }
 
-class CounterWidget extends ConsumerWidget {
+class CounterWidget extends ConsumerStatefulWidget {
   final int index;
   const CounterWidget({super.key, required this.index});
+
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ConsumerStatefulWidget> createState() => _CounterWidgetState();
+}
+
+class _CounterWidgetState extends ConsumerState<CounterWidget> {
+  Timer? timer;
+
+  @override
+  Widget build(BuildContext context) {
+    final index = widget.index;
     final counters = ref.watch(counterProvider);
     final name = counters[index].name;
     final value = counters[index].value;
@@ -186,20 +195,37 @@ class CounterWidget extends ConsumerWidget {
             Expanded(
               child: Material(
                 color: color,
-                child: InkWell(
-                  onTap: () {
-                    ref
-                        .read(counterProvider.notifier)
-                        .plusValue(index: index, amount: -1);
+                child: GestureDetector(
+                  onLongPress: () {
+                    setState(() {
+                      timer =
+                          Timer.periodic(Duration(milliseconds: 50), (timer) {
+                        ref
+                            .read(counterProvider.notifier)
+                            .plusValue(index: index, amount: -1);
+                      });
+                    });
                   },
-                  child: Padding(
-                    padding: const EdgeInsets.only(left: 8),
-                    child: Align(
-                        alignment: Alignment.centerLeft,
-                        child: Icon(
-                          Icons.remove,
-                          color: textColor,
-                        )),
+                  onLongPressEnd: (details) {
+                    setState(() {
+                      timer?.cancel();
+                    });
+                  },
+                  child: InkWell(
+                    onTap: () {
+                      ref
+                          .read(counterProvider.notifier)
+                          .plusValue(index: index, amount: -1);
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.only(left: 8),
+                      child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: Icon(
+                            Icons.remove,
+                            color: textColor,
+                          )),
+                    ),
                   ),
                 ),
               ),
@@ -243,20 +269,37 @@ class CounterWidget extends ConsumerWidget {
             Expanded(
               child: Material(
                 color: color,
-                child: InkWell(
-                  onTap: () {
-                    ref
-                        .read(counterProvider.notifier)
-                        .plusValue(index: index, amount: 1);
+                child: GestureDetector(
+                  onLongPress: () {
+                    setState(() {
+                      timer =
+                          Timer.periodic(Duration(milliseconds: 50), (timer) {
+                        ref
+                            .read(counterProvider.notifier)
+                            .plusValue(index: index, amount: 1);
+                      });
+                    });
                   },
-                  child: Padding(
-                    padding: const EdgeInsets.only(right: 8),
-                    child: Align(
-                        alignment: Alignment.centerRight,
-                        child: Icon(
-                          Icons.add,
-                          color: textColor,
-                        )),
+                  onLongPressEnd: (details) {
+                    setState(() {
+                      timer?.cancel();
+                    });
+                  },
+                  child: InkWell(
+                    onTap: () {
+                      ref
+                          .read(counterProvider.notifier)
+                          .plusValue(index: index, amount: 1);
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: Align(
+                          alignment: Alignment.centerRight,
+                          child: Icon(
+                            Icons.add,
+                            color: textColor,
+                          )),
+                    ),
                   ),
                 ),
               ),
@@ -331,9 +374,16 @@ class _DialogUIState extends ConsumerState<DialogUI> {
   }
 
   void _submitted(String value) {
-    ref
-        .read(counterProvider.notifier)
-        .changeName(index: widget.index, newName: value);
-    Navigator.pop(context);
+    if (value.length > 10) {
+      ScaffoldMessenger.of(context)
+        ..removeCurrentSnackBar()
+        ..showSnackBar(const SnackBar(
+            content: Text("The name is too long. Use a shorter name.")));
+    } else {
+      ref
+          .read(counterProvider.notifier)
+          .changeName(index: widget.index, newName: value);
+      Navigator.pop(context);
+    }
   }
 }
