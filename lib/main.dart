@@ -77,7 +77,8 @@ final counterProvider =
 });
 
 void main() {
-  runApp(const ProviderScope(child: MaterialApp(home: MainApp())));
+  runApp(const ProviderScope(
+      child: MaterialApp(debugShowCheckedModeBanner: false, home: MainApp())));
 }
 
 class MainApp extends ConsumerWidget {
@@ -100,7 +101,8 @@ class MainApp extends ConsumerWidget {
                       .read(counterProvider.notifier)
                       .addCounter(name: name, value: 0, hslColor: hslColor);
                 },
-                icon: const Icon(Icons.add))
+                icon: const Icon(Icons.add)),
+            IconButton(onPressed: () {}, icon: const Icon(Icons.more_vert))
           ],
           title: const Text('Counter'),
         ),
@@ -198,8 +200,8 @@ class _CounterWidgetState extends ConsumerState<CounterWidget> {
                 child: GestureDetector(
                   onLongPress: () {
                     setState(() {
-                      timer =
-                          Timer.periodic(Duration(milliseconds: 50), (timer) {
+                      timer = Timer.periodic(const Duration(milliseconds: 50),
+                          (timer) {
                         ref
                             .read(counterProvider.notifier)
                             .plusValue(index: index, amount: -1);
@@ -272,8 +274,8 @@ class _CounterWidgetState extends ConsumerState<CounterWidget> {
                 child: GestureDetector(
                   onLongPress: () {
                     setState(() {
-                      timer =
-                          Timer.periodic(Duration(milliseconds: 50), (timer) {
+                      timer = Timer.periodic(const Duration(milliseconds: 50),
+                          (timer) {
                         ref
                             .read(counterProvider.notifier)
                             .plusValue(index: index, amount: 1);
